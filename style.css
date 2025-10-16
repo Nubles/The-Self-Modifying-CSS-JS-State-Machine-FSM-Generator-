@@ -50,4 +50,20 @@ h1 {
     border: 1px solid #eee;
     padding: 10px;
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.state button, .transition button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.state button:hover, .transition button:hover {
+    background-color: #c82333;
 }

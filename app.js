@@ -99,23 +99,63 @@ document.addEventListener('DOMContentLoaded', () => {
         fsmData.states.forEach(state => {
             const stateDiv = document.createElement('div');
             stateDiv.className = 'state';
-            stateDiv.textContent = `${state.label} (ID: ${state.id})`;
+
+            const stateText = document.createElement('span');
+            stateText.textContent = `${state.label} (ID: ${state.id})`;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = () => deleteState(state.id);
+
+            stateDiv.appendChild(stateText);
+            stateDiv.appendChild(deleteBtn);
             statesList.appendChild(stateDiv);
         });
     }
 
+    function deleteState(stateId) {
+        // Find the index of the state to delete
+        const stateIndex = fsmData.states.findIndex(s => s.id === stateId);
+        if (stateIndex === -1) return;
+
+        // Remove the state
+        fsmData.states.splice(stateIndex, 1);
+
+        // Remove any transitions connected to this state
+        fsmData.transitions = fsmData.transitions.filter(t => t.from !== stateId && t.to !== stateId);
+
+        // Re-render the UI
+        render();
+    }
+
     function renderTransitions() {
         transitionsList.innerHTML = '';
-        fsmData.transitions.forEach(t => {
+        fsmData.transitions.forEach((t, index) => {
             const fromState = fsmData.states.find(s => s.id === t.from);
             const toState = fsmData.states.find(s => s.id === t.to);
             if (fromState && toState) {
                 const transDiv = document.createElement('div');
                 transDiv.className = 'transition';
-                transDiv.textContent = `${fromState.label} -> "${t.label}" -> ${toState.label}`;
+
+                const transText = document.createElement('span');
+                transText.textContent = `${fromState.label} -> "${t.label}" -> ${toState.label}`;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteTransition(index);
+
+                transDiv.appendChild(transText);
+                transDiv.appendChild(deleteBtn);
                 transitionsList.appendChild(transDiv);
             }
         });
+    }
+
+    function deleteTransition(transitionIndex) {
+        if (transitionIndex < 0 || transitionIndex >= fsmData.transitions.length) return;
+
+        fsmData.transitions.splice(transitionIndex, 1);
+        render();
     }
 
     function updateStateDropdowns() {
