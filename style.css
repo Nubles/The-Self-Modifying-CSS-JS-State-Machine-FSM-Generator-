@@ -1,0 +1,53 @@
+body {
+    font-family: sans-serif;
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "editor preview"
+        "output preview";
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+h1 {
+    grid-area: header;
+}
+
+#editor-container {
+    grid-area: editor;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+#code-output-container {
+    grid-area: output;
+}
+
+#preview-container {
+    grid-area: preview;
+    display: flex;
+    flex-direction: column;
+}
+
+#code-output {
+    width: 100%;
+    height: 300px;
+    font-family: monospace;
+}
+
+#preview-frame {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+}
+
+.state, .transition {
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+}

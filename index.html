@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSM Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="editor-container">
+        <h1>FSM Editor</h1>
+        <div id="editor">
+            <div id="states-editor">
+                <h3>States</h3>
+                <input type="text" id="state-name" placeholder="State Name">
+                <button id="add-state-btn">Add State</button>
+                <div id="states-list"></div>
+            </div>
+            <div id="transitions-editor">
+                <h3>Transitions</h3>
+                <select id="from-state"></select>
+                <input type="text" id="transition-label" placeholder="Transition Label">
+                <select id="to-state"></select>
+                <button id="add-transition-btn">Add Transition</button>
+                <div id="transitions-list"></div>
+            </div>
+        </div>
+        <button id="generate-btn">Generate Final Code</button>
+        <button id="reset-btn">Reset Editor</button>
+    </div>
+
+    <div id="code-output-container">
+        <h2>Generated Code</h2>
+        <textarea id="code-output" readonly></textarea>
+        <button id="download-btn">Download FSM as HTML File</button>
+    </div>
+
+    <div id="preview-container">
+        <h2>Live Preview</h2>
+        <iframe id="preview-frame"></iframe>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
