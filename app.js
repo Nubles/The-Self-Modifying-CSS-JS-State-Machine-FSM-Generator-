@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const stateId = `state-${fsmData.states.length}`;
-        const newState = { id: stateId, label: name, content: `Content for ${name}` };
+        const newState = { id: stateId, label: name, content: `Content for ${name}`, isEditing: false };
         fsmData.states.push(newState);
 
         stateNameInput.value = '';
@@ -100,15 +100,64 @@ document.addEventListener('DOMContentLoaded', () => {
             const stateDiv = document.createElement('div');
             stateDiv.className = 'state';
 
-            const stateText = document.createElement('span');
-            stateText.textContent = `${state.label} (ID: ${state.id})`;
+            if (state.isEditing) {
+                // Create editing UI
+                const editorWrapper = document.createElement('div');
+                editorWrapper.className = 'state-editor';
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = () => deleteState(state.id);
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.value = state.label;
 
-            stateDiv.appendChild(stateText);
-            stateDiv.appendChild(deleteBtn);
+                const contentTextarea = document.createElement('textarea');
+                contentTextarea.value = state.content;
+
+                const buttonWrapper = document.createElement('div');
+                const saveBtn = document.createElement('button');
+                saveBtn.textContent = 'Save';
+                saveBtn.className = 'save-btn';
+                saveBtn.onclick = () => updateState(state.id, labelInput.value, contentTextarea.value);
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.className = 'cancel-btn';
+                cancelBtn.onclick = () => {
+                    state.isEditing = false;
+                    render();
+                };
+
+                editorWrapper.appendChild(document.createTextNode('Label:'));
+                editorWrapper.appendChild(labelInput);
+                editorWrapper.appendChild(document.createTextNode('Content:'));
+                editorWrapper.appendChild(contentTextarea);
+                buttonWrapper.appendChild(saveBtn);
+                buttonWrapper.appendChild(cancelBtn);
+                editorWrapper.appendChild(buttonWrapper);
+                stateDiv.appendChild(editorWrapper);
+            } else {
+                // Create display UI
+                const stateText = document.createElement('span');
+                stateText.textContent = `${state.label} (ID: ${state.id})`;
+
+                const buttonWrapper = document.createElement('div');
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.className = 'edit-btn';
+                editBtn.onclick = () => {
+                    fsmData.states.forEach(s => s.isEditing = false); // Ensure only one is edited at a time
+                    state.isEditing = true;
+                    render();
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteState(state.id);
+
+                buttonWrapper.appendChild(editBtn);
+                buttonWrapper.appendChild(deleteBtn);
+                stateDiv.appendChild(stateText);
+                stateDiv.appendChild(buttonWrapper);
+            }
             statesList.appendChild(stateDiv);
         });
     }
@@ -126,6 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Re-render the UI
         render();
+    }
+
+    function updateState(stateId, newLabel, newContent) {
+        const state = fsmData.states.find(s => s.id === stateId);
+        if (state) {
+            state.label = newLabel.trim();
+            state.content = newContent.trim();
+            state.isEditing = false;
+            render();
+        }
     }
 
     function renderTransitions() {
