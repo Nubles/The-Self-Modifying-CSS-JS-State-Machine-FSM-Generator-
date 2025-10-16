@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const fsmData = {
+    let fsmData = {
         states: [],
-        transitions: []
+        transitions: [],
+        initialStateId: null
     };
 
     const stateNameInput = document.getElementById('state-name');
@@ -25,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn.addEventListener('click', resetEditor);
     generateBtn.addEventListener('click', generateFinalCode);
     downloadBtn.addEventListener('click', downloadFsmAsHtmlFile);
+
+    loadStateFromLocalStorage();
 
     function downloadFsmAsHtmlFile() {
         const code = codeOutput.value;
@@ -59,8 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const newState = { id: stateId, label: name, content: `Content for ${name}`, isEditing: false };
         fsmData.states.push(newState);
 
+        // Set the first state as the initial state by default
+        if (fsmData.states.length === 1) {
+            fsmData.initialStateId = stateId;
+        }
+
         stateNameInput.value = '';
         render();
+        saveStateToLocalStorage();
     }
 
     function addTransition() {
@@ -78,14 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         transitionLabelInput.value = '';
         render();
+        saveStateToLocalStorage();
     }
 
     function resetEditor() {
-        fsmData.states = [];
-        fsmData.transitions = [];
+        fsmData = { states: [], transitions: [], initialStateId: null };
         render();
         codeOutput.value = '';
         previewFrame.srcdoc = '';
+        saveStateToLocalStorage();
     }
 
     function render() {
@@ -136,8 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 stateDiv.appendChild(editorWrapper);
             } else {
                 // Create display UI
+                const displayWrapper = document.createElement('div');
+                displayWrapper.className = 'state-display';
+
+                const initialRadio = document.createElement('input');
+                initialRadio.type = 'radio';
+                initialRadio.name = 'initial-state';
+                initialRadio.checked = state.id === fsmData.initialStateId;
+                initialRadio.onchange = () => setInitialState(state.id);
+
                 const stateText = document.createElement('span');
                 stateText.textContent = `${state.label} (ID: ${state.id})`;
+
+                displayWrapper.appendChild(initialRadio);
+                displayWrapper.appendChild(document.createTextNode(' Initial '));
+                displayWrapper.appendChild(stateText);
 
                 const buttonWrapper = document.createElement('div');
                 const editBtn = document.createElement('button');
@@ -155,11 +178,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 buttonWrapper.appendChild(editBtn);
                 buttonWrapper.appendChild(deleteBtn);
-                stateDiv.appendChild(stateText);
+                stateDiv.appendChild(displayWrapper);
                 stateDiv.appendChild(buttonWrapper);
             }
             statesList.appendChild(stateDiv);
         });
+    }
+
+    function setInitialState(stateId) {
+        fsmData.initialStateId = stateId;
+        render();
+        saveStateToLocalStorage();
+    }
+
+    function saveStateToLocalStorage() {
+        localStorage.setItem('fsmData', JSON.stringify(fsmData));
+    }
+
+    function loadStateFromLocalStorage() {
+        const savedData = localStorage.getItem('fsmData');
+        if (savedData) {
+            fsmData = JSON.parse(savedData);
+        }
     }
 
     function deleteState(stateId) {
@@ -173,8 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove any transitions connected to this state
         fsmData.transitions = fsmData.transitions.filter(t => t.from !== stateId && t.to !== stateId);
 
+        // If the deleted state was the initial state, set the new initial state to be the first one, if it exists.
+        if (fsmData.initialStateId === stateId) {
+            fsmData.initialStateId = fsmData.states.length > 0 ? fsmData.states[0].id : null;
+        }
+
         // Re-render the UI
         render();
+        saveStateToLocalStorage();
     }
 
     function updateState(stateId, newLabel, newContent) {
@@ -184,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             state.content = newContent.trim();
             state.isEditing = false;
             render();
+            saveStateToLocalStorage();
         }
     }
 
@@ -215,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fsmData.transitions.splice(transitionIndex, 1);
         render();
+        saveStateToLocalStorage();
     }
 
     function updateStateDropdowns() {
@@ -264,9 +312,8 @@ ${generatedHtml}
 
     function generateHtml() {
         let html = '';
-        fsmData.states.forEach((state, index) => {
-            const isFirstState = index === 0;
-            const checkedAttr = isFirstState ? 'checked' : '';
+        fsmData.states.forEach(state => {
+            const checkedAttr = state.id === fsmData.initialStateId ? 'checked' : '';
             // Using radio buttons to ensure only one state is active at a time
             html += `        <input type="radio" name="fsm-state" id="${state.id}-radio" ${checkedAttr}>\n`;
         });
